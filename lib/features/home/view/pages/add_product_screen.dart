@@ -9,6 +9,7 @@ import 'package:hacker_kernel_test/features/auth/view/widgets/repeated_text_fiel
 import 'package:hacker_kernel_test/features/home/model/product_model.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
+import 'package:vibration/vibration.dart';
 
 class AddProductScreen extends StatefulWidget {
   const AddProductScreen({super.key});
@@ -81,22 +82,51 @@ class _AddProductScreenState extends State<AddProductScreen> {
               ),
               SizedBox(height: 40),
               GestureDetector(
-                onTap: () {
+                onTap: () async {
                   if (image == null) {
                     Get.snackbar("Message", "Please pick a product image",
                         backgroundColor: Colors.white);
                     return;
                   }
                   if (_globalKey.currentState!.validate()) {
+                    List<ProductModel> productsList =
+                        await SharedPrefProducts().getProducts() ?? [];
+
                     var uuid = Uuid();
                     ProductModel product = ProductModel(
                         id: uuid.v4(),
                         name: _nameController.text,
                         image: image!.path,
                         price: _priceController.text);
-                    SharedPrefProducts()
-                        .saveProducts(product)
-                        .then((value) => Get.back());
+
+                    bool productExists =
+                        productsList.any((p) => p.name == product.name);
+
+                    if (productExists) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Cannot add product with the same name!',
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.w600),
+                          ),
+                          backgroundColor: Colors.white,
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
+                          showCloseIcon: true,
+                          closeIconColor: Colors.black,
+                          onVisible: () {
+                            Vibration.vibrate();
+                          },
+                        ),
+                      );
+                    } else {
+                      SharedPrefProducts()
+                          .saveProducts(product)
+                          .then((value) => Get.back());
+                    }
                   }
                 },
                 child: CustomButton(

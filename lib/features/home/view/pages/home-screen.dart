@@ -30,11 +30,16 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       isLoading = true;
     });
-    productsList = await SharedPrefProducts().getProducts() ?? [];
-    filteredProductsList = productsList;
-    Future.delayed(Duration(seconds: 1)).whenComplete(() => setState(() {
-          isLoading = false;
-        }));
+    try {
+      productsList = await SharedPrefProducts().getProducts() ?? [];
+      filteredProductsList = productsList;
+    } catch (e) {
+      print('----------> $e');
+    } finally {
+      Future.delayed(Duration(seconds: 1)).whenComplete(() => setState(() {
+            isLoading = false;
+          }));
+    }
   }
 
   searchProducts(String query) {
@@ -84,6 +89,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    print('---------->');
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,

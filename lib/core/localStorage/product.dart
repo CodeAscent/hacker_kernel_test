@@ -17,7 +17,7 @@ class SharedPrefProducts {
   Future<List<ProductModel>?>? getProducts() async {
     List<ProductModel> products = [];
     List<String>? productsList =
-        await await SharedPref.preferences.getStringList("product");
+        await SharedPref.preferences.getStringList("product") ?? [];
     if (productsList != []) {
       for (var item in productsList!) {
         products.add(ProductModel.fromJson(jsonDecode(item)));
